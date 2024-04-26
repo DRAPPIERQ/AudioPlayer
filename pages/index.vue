@@ -25,8 +25,8 @@ onMounted(async () => {
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-col gap-4 bg-white p-4 rounded-lg shadow-lg">
-      <h1 class="text-2xl font-bold">Explorer</h1>
-      <NuxtLink to="/">Go to Home</NuxtLink>
+      <h1 class="text-2xl font-bold">Home</h1>
+      <NuxtLink to="/explorer">Go to Explorer</NuxtLink>
       {{ currentTrack }}
     </div>
 

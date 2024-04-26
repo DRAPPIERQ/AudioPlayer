@@ -9,10 +9,6 @@ const usePlayerStore = defineStore({
       string,
       ReturnType<typeof createEventHook<TrackInterface>>
     >(),
-    listnerPlayingTrackEnded: new Map<
-      string,
-      ReturnType<typeof createEventHook<TrackInterface>>
-    >(),
   }),
   getters: {
     previousTrack: (state: PlayerStoreInterface) =>
@@ -25,7 +21,7 @@ const usePlayerStore = defineStore({
     rollbackHistory() {
       this.trackHistoric.pop();
       this.currentTrackIndex = this.trackHistoric.length - 1;
-      this.playTrack(this.currentTrack);
+      return this.currentTrack;
     },
     pushtTrack(track: TrackInterface) {
       this.trackHistoric.push(track);
@@ -40,15 +36,12 @@ const usePlayerStore = defineStore({
       key: string,
       handler: (track: TrackInterface) => void
     ) {
-      this.listnerPlayingTrackUpdate.set(
-        key,
-        createEventHook<TrackInterface>()
-      );
+      if (!this.listnerPlayingTrackUpdate.has(key))
+        this.listnerPlayingTrackUpdate.set(
+          key,
+          createEventHook<TrackInterface>()
+        );
       this.listnerPlayingTrackUpdate.get(key)?.on(handler);
-    },
-    onPlayingTrackEnded(key: string, handler: () => void) {
-      this.listnerPlayingTrackEnded.set(key, createEventHook<TrackInterface>());
-      this.listnerPlayingTrackEnded.get(key)?.on(handler);
     },
   },
   persist: true,

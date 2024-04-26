@@ -5,10 +5,6 @@ export interface PlayerStoreInterface {
     string,
     ReturnType<typeof createEventHook<TrackInterface>>
   >;
-  listnerPlayingTrackEnded: Map<
-    string,
-    ReturnType<typeof createEventHook<TrackInterface>>
-  >;
 }
 
 export interface TrackInterface {

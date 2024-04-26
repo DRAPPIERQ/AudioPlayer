@@ -3,22 +3,24 @@ const { currentTrack, playTrack } = usePlayer();
 
 const items = ref<any>([]);
 
+const playRandom = (current_track?: TrackInterface) => {
+  const index = Math.floor(Math.random() * items.value.length);
+  const item = items.value[index];
+  if (item.id != current_track?.id)
+    playTrack({
+      id: item.id,
+      title: item.title,
+      album_title: item.album?.title,
+      artist_name: item.artist?.name,
+      cover: item.album?.cover_xl,
+      url: item.preview,
+    });
+  else playRandom(current_track);
+};
+
 onMounted(async () => {
   items.value = await useDeezerApi().search('luis amstrong');
-  // random item to play
-  const index = Math.floor(Math.random() * items.value.length);
-  if (!currentTrack.value) {
-    const item = items.value[index];
-    if (item)
-      playTrack({
-        id: item.id,
-        title: item.title,
-        album_title: item.album?.title,
-        artist_name: item.artist?.name,
-        cover: item.album?.cover_xl,
-        url: item.preview,
-      });
-  }
+  playRandom();
 });
 </script>
 
@@ -34,7 +36,7 @@ onMounted(async () => {
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"
     >
       <div
-        v-for="item in items"
+        v-for="(item, index) in items"
         class="relative bg-white rounded-lg shadow-lg aspect-square group overflow-scroll cursor-pointer"
         :style="{
           backgroundImage: `url(${item.album.cover_xl})`,
@@ -50,7 +52,7 @@ onMounted(async () => {
                 album_title: item.album?.title,
                 artist_name: item.artist?.name,
                 cover: item.album?.cover_xl,
-                url: item.preview,
+                url: index > 0 ? item.preview : '',
               },
               e
             )

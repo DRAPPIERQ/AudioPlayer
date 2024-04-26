@@ -65,6 +65,8 @@ export default (playerElement?: Ref<HTMLElement | null>, _key?: string) => {
       waveSurfer.value = WaveSurfer.create({
         ...DEFAULT_WAVE_SURFER_OPTIONS,
         container: playerElement.value,
+        autoplay: true,
+        dragToSeek: true,
       });
       initWaveSurferListeners();
     } catch (error) {
@@ -73,34 +75,45 @@ export default (playerElement?: Ref<HTMLElement | null>, _key?: string) => {
     }
   };
 
-  onMounted(() => {
+  const loadAudioTrack = async (track: TrackInterface) => {
+    const blob = await fetch(track.url).then((res: Response) => res.blob());
+    if (blob instanceof Blob && blob.type.includes('audio')) {
+      if (waveSurfer.value instanceof WaveSurfer) {
+        trackBlob.value = blob;
+        waveSurfer.value.empty();
+        await waveSurfer.value.loadBlob(blob);
+      }
+    } else {
+      throw new Error('Incorrect Bob');
+    }
+  };
+
+  const loadAudioTrackOrFallback = async (track: TrackInterface) => {
+    try {
+      await loadAudioTrack(track);
+    } catch (error) {
+      const previous_track = playerStore.rollbackHistory();
+      if (previous_track) loadAudioTrackOrFallback(previous_track);
+    }
+  };
+
+  const initPlayer = () => {
     if (key && playerElement?.value instanceof HTMLElement) {
+      // On playing track
       playerStore.onPlayingTrackUpdate(key, async (track: TrackInterface) => {
         if (currentTrack.value?.id != track.id) {
           playerStore.pushtTrack(track);
           // Delay to avoid multiple play
-          await initWaveSurfer();
-          try {
-            const blob = await fetch(track.url).then((res: Response) =>
-              res.blob()
-            );
-            if (blob instanceof Blob) {
-              if (waveSurfer.value instanceof WaveSurfer) {
-                trackBlob.value = blob;
-                await waveSurfer.value.loadBlob(blob);
-                waveSurfer.value?.play();
-              }
-            }
-          } catch (error) {
-            killWaveSurfer();
-            playerStore.rollbackHistory();
-          }
+          if (!(waveSurfer.value instanceof WaveSurfer)) await initWaveSurfer();
+          await loadAudioTrackOrFallback(track);
         } else {
           waveSurfer.value?.playPause();
         }
       });
     }
-  });
+  };
+
+  onMounted(initPlayer);
 
   const trackPlayPause = () => {
     waveSurfer.value?.playPause();

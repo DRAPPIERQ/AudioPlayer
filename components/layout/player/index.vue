@@ -29,8 +29,11 @@ const { currentTrack, trackPlayPause, isTrackPlaying, WAVE_SURFER_ID } =
         </p>
       </div>
     </div>
-    <div class="flex flex-row justify-end items-center gap-4 h-full flex-1 p-2">
+    <div
+      class="flex flex-row justify-start items-center gap-4 h-full flex-1 px-4 py-2"
+    >
       <div
+        v-if="currentTrack"
         class="text-primary-600 h-12 w-12 aspect-square cursor-pointer"
         @click="trackPlayPause"
       >
